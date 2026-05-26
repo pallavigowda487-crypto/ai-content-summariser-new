@@ -12,7 +12,6 @@ from database.mongodb import db_instance
 st.set_page_config(page_title="AI Content Summarizer", layout="wide", page_icon="📝")
 
 # Initialize services
-@st.cache_resource
 def get_summary_service():
     try:
         return SummaryService()
