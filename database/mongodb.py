@@ -3,9 +3,18 @@ from pathlib import Path
 
 from pymongo import MongoClient
 from pymongo.errors import ConnectionFailure
-from dotenv import load_dotenv
+from dotenv import dotenv_values, load_dotenv
 
-load_dotenv(Path(__file__).resolve().parents[1] / ".env")
+try:
+    import streamlit as st
+    HAS_STREAMLIT = True
+except ImportError:
+    HAS_STREAMLIT = False
+
+root_env = Path(__file__).resolve().parents[1] / ".env"
+load_dotenv(root_env)
+for key, value in dotenv_values(root_env).items():
+    os.environ.setdefault(key, value)
 
 class MongoDB:
     _instance = None
@@ -18,6 +27,13 @@ class MongoDB:
 
     def _connect(self):
         url = os.getenv("MONGODB_URL") or os.getenv("MONGO_URI")
+        
+        if not url and HAS_STREAMLIT:
+            try:
+                url = st.secrets.get("MONGODB_URL") or st.secrets.get("MONGO_URI")
+            except Exception:
+                pass
+
         if not url:
             self.db = None
             return
